@@ -77,7 +77,7 @@ function registerIpc() {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1280, height: 780, show: false, title: 'RTT',
+    width: 1280, height: 780, show: false, title: 'RTT', icon: join(__dirname, '../../build/icon.png'),
     webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false, sandbox: false }
   })
   win.on('ready-to-show', () => win?.show())
