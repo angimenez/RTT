@@ -13,6 +13,9 @@ const api: RttApi = {
   readSession: invoke('readSession') as RttApi['readSession'],
   openSessionFolder: invoke('openSessionFolder') as RttApi['openSessionFolder'],
   testTelegram: invoke('testTelegram') as RttApi['testTelegram'],
+  pickVoice: invoke('pickVoice') as RttApi['pickVoice'],
+  generateAudio: invoke('generateAudio') as RttApi['generateAudio'],
+  readAudio: invoke('readAudio') as RttApi['readAudio'],
   onEvent(cb) {
     const handler = (_: unknown, e: RttEvent) => cb(e)
     ipcRenderer.on('rtt:event', handler)

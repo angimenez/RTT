@@ -32,6 +32,7 @@ function reduce(s: LiveState, e: RttEvent): LiveState {
     case 'summary': return { ...s, summary: e.summary }
     case 'progress': return { ...s, progress: e.text }
     case 'error': return { ...s, errors: [...s.errors.slice(-4), e.message] }
+    case 'audio': return s // lo gestiona AudioControls
   }
 }
 

@@ -24,3 +24,5 @@ pre { white-space:pre-wrap; font:inherit; margin:0; }
 .alert.task { border-left-color:#3dd68c; } .alert.date { border-left-color:#f5a524; } .alert.decision { border-left-color:#a78bfa; }
 .alert h4 { margin:0 0 4px; } .alert p { margin:0 0 6px; } .alert button { float:right; padding:2px 8px; font-size:12px; }
 @keyframes in { from { opacity:0; transform:translateY(-6px); } }
+
+.audio { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:8px; } .audio audio { height:32px; }

@@ -15,6 +15,7 @@ export class ModelService {
   private whisper: ModelState = { stage: 'idle' }
   private llm: ModelState = { stage: 'idle' }
   private loading?: Promise<void>
+  private exclusive?: Promise<void>
   private loadedLanguage?: string
 
   constructor(private emit: Listener) {}
@@ -24,10 +25,27 @@ export class ModelService {
     this.emit(this.whisper, this.llm)
   }
 
-  /** Idempotente: si ya están cargados con el mismo idioma, no hace nada. */
-  ensureLoaded(settings: Settings): Promise<void> {
+  /** Idempotente: si ya están cargados con el mismo idioma, no hace nada. Espera si hay un uso exclusivo en curso. */
+  async ensureLoaded(settings: Settings): Promise<void> {
+    while (this.exclusive) await this.exclusive.catch(() => {})
     this.loading ??= this.loadAll(settings).finally(() => { this.loading = undefined })
     return this.loading
+  }
+
+  /**
+   * Libera Whisper y el LLM, ejecuta `fn` (p. ej. el TTS, que necesita la RAM/VRAM) y los vuelve a cargar,
+   * incluso si `fn` falla. Mientras dura, `ensureLoaded` espera.
+   */
+  async withModelsUnloaded<T>(settings: Settings, fn: () => Promise<T>): Promise<T> {
+    const run = async () => {
+      await this.loading?.catch(() => {})
+      await this.unloadAll()
+      this.set('whisper', { stage: 'idle' }); this.set('llm', { stage: 'idle' })
+      try { return await fn() } finally { await this.loadAll(settings).catch(() => {}) }
+    }
+    const op = run()
+    this.exclusive = op.then(() => {}, () => {})
+    try { return await op } finally { this.exclusive = undefined }
   }
 
   private async loadAll(settings: Settings) {

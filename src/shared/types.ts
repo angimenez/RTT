@@ -38,6 +38,7 @@ export type RttEvent =
   | { type: 'error'; message: string }
   | { type: 'summary'; summary: string }
   | { type: 'progress'; text: string }
+  | { type: 'audio'; state: 'working' | 'done' | 'error'; text: string; session: string }
 
 // API expuesta por el preload en window.rtt
 export interface RttApi {
@@ -50,5 +51,8 @@ export interface RttApi {
   readSession(name: string): Promise<SessionDetail>
   openSessionFolder(name?: string): Promise<void>
   testTelegram(): Promise<string>
+  pickVoice(): Promise<string | null>
+  generateAudio(session: string, voicePath: string): Promise<void>
+  readAudio(session: string): Promise<Uint8Array | null>
   onEvent(cb: (e: RttEvent) => void): () => void
 }

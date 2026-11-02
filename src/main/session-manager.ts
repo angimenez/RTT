@@ -33,6 +33,8 @@ export class SessionManager extends EventEmitter {
     this.emitEvent({ type: 'status', status, session: this.store?.name })
   }
 
+  get isIdle() { return this.status === 'idle' }
+
   async start() {
     if (this.status !== 'idle') return
     this.setStatus('starting')

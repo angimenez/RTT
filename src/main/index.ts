@@ -1,12 +1,13 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import type { RttEvent, Settings } from '../shared/types'
 import { ModelService } from './models'
 import { TelegramNotifier } from './notifier-telegram'
 import { SessionManager } from './session-manager'
 import { listSessions, readSession } from './session-store'
 import { loadSettings, saveSettings } from './settings-store'
+import { generateSummaryAudio } from './tts'
 
 // Linux: sin helper SUID el sandbox de Chromium falla (igual que en el tutorial de QVAC).
 if (process.platform === 'linux') app.commandLine.appendSwitch('no-sandbox')
@@ -31,6 +32,35 @@ function registerIpc() {
     const dir = name ? join(settings.sessionsDir, name) : settings.sessionsDir
     await mkdir(dir, { recursive: true })
     await shell.openPath(dir)
+  })
+  ipcMain.handle('pickVoice', async () => {
+    const r = await dialog.showOpenDialog(win!, {
+      title: 'Elige el audio con la voz a imitar (mínimo ~5 s, una sola persona)',
+      properties: ['openFile'],
+      filters: [{ name: 'Audio', extensions: ['wav', 'mp3', 'ogg', 'flac', 'm4a', 'opus', 'webm'] }]
+    })
+    return r.canceled ? null : r.filePaths[0]
+  })
+  let audioBusy = false
+  ipcMain.handle('generateAudio', async (_e, session: string, voicePath: string) => {
+    const emit = (state: 'working' | 'done' | 'error', text: string) => send({ type: 'audio', state, text, session })
+    if (audioBusy) return
+    if (!manager.isIdle) return emit('error', 'Hay una sesión en curso; espera a que termine.')
+    audioBusy = true
+    try {
+      const dir = join(settings.sessionsDir, session)
+      const summary = await readFile(join(dir, 'summary.md'), 'utf8')
+      emit('working', 'Liberando Whisper y el LLM para dejar memoria…')
+      await models.withModelsUnloaded(settings, () =>
+        generateSummaryAudio(summary, voicePath, settings, join(dir, 'summary.wav'), (t) => emit('working', t)))
+      emit('done', 'Audio listo')
+    } catch (err) {
+      emit('error', err instanceof Error ? err.message : String(err))
+    } finally { audioBusy = false }
+  })
+  ipcMain.handle('readAudio', async (_e, session: string) => {
+    const buf = await readFile(join(settings.sessionsDir, session, 'summary.wav')).catch(() => null)
+    return buf ? new Uint8Array(buf) : null
   })
   ipcMain.handle('testTelegram', async () => {
     try { await TelegramNotifier.test(settings.telegram); return 'ok' } catch (e) { return e instanceof Error ? e.message : String(e) }

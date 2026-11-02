@@ -29,6 +29,8 @@ La primera vez, la app descarga los modelos a `~/.qvac/models/`. Arriba, en el p
 4. Cada pocos segmentos, el modelo revisa lo último que se dijo y publica **alertas** en el panel derecho. El botón *Copiar* de cada alerta copia su texto.
 5. Pulsa **■ Detener**. La app termina el análisis en curso, genera el resumen y guarda todo. En llamadas largas el resumen se hace por bloques y puede tardar varios minutos; un aviso arriba indica el paso.
 
+6. Con el resumen visible (sesión recién terminada o abierta desde el historial) aparece **Generar audio**: eliges un audio con la voz a imitar (mínimo ~5 s, una sola persona; cualquier formato, se convierte con `ffmpeg`) y la app lee el resumen con esa voz (Chatterbox multilingüe, clonación local). Se guarda como `summary.wav` en la carpeta de la sesión. La primera vez descarga el modelo de voz (~2 GB) y la síntesis puede tardar varios minutos.
+
 ### Panel izquierdo
 
 - **Historial:** lista de sesiones anteriores. Al abrir una se ven su transcripción, resumen y alertas; *Volver al directo* regresa a la vista en vivo. *Abrir carpeta* abre el directorio de sesiones.

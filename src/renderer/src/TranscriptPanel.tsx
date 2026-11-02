@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { ModelState, SessionDetail } from '../../shared/types'
 import type { LiveState } from './App'
+import { AudioControls } from './AudioControls'
 
 const modelLabel = (name: string, m: ModelState) =>
   `${name}: ${m.stage === 'downloading' ? `descargando ${m.percent ?? 0}%` : m.stage === 'error' ? `error (${m.error})` : m.stage}`
@@ -23,6 +24,7 @@ export function TranscriptPanel({ live, viewing, onStart, onStop, onCloseView }:
   const busy = live.status !== 'idle'
   const ready = live.whisper.stage === 'ready' && live.llm.stage === 'ready'
   const summary = viewing ? viewing.summary : live.summary
+  const session = viewing ? viewing.name : live.session
 
   return (
     <main className="center">
@@ -56,7 +58,13 @@ export function TranscriptPanel({ live, viewing, onStart, onStop, onCloseView }:
         <div ref={bottom} />
       </section>
 
-      {summary && <section className="summary"><h3>Resumen</h3><pre>{summary}</pre></section>}
+      {summary && (
+        <section className="summary">
+          <h3>Resumen</h3>
+          <pre>{summary}</pre>
+          {session && live.status === 'idle' && <AudioControls session={session} />}
+        </section>
+      )}
     </main>
   )
 }

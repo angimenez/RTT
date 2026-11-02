@@ -25,6 +25,7 @@ Renderer (React)  ──window.rtt──►  Preload  ──IPC──►  Main (
 | `models.ts` | Carga y descarga de Whisper y del LLM. Las constantes de modelos están al inicio del archivo. |
 | `transcriber.ts` | `transcribeStream` (Whisper + VAD). Un texto por tramo de voz; los tiempos se calculan con el audio recibido. |
 | `analyzer.ts` | Alertas (tool calling `create_alert`) y resumen final (por bloques si es largo). |
+| `tts.ts` | Resumen → audio con Chatterbox multilingüe, clonando la voz de un audio de referencia (convertido a wav con `ffmpeg`). Carga el modelo solo durante la síntesis. |
 | `notifier-telegram.ts` | Envío a la API de bots con cola de ~1 mensaje/s. Un fallo no corta la sesión. |
 | `session-store.ts` | Escribe y lee la carpeta de cada sesión. |
 | `settings-store.ts` | `settings.json`; el token de Telegram se cifra con `safeStorage`. |
@@ -42,7 +43,8 @@ Renderer (React)  ──window.rtt──►  Preload  ──IPC──►  Main (
 ~/Documentos/RTT-sessions/<AAAA-MM-DD_HH-mm-ss>/
 ├─ transcript.txt   # [hh:mm:ss] texto, se escribe en vivo
 ├─ alerts.json      # array de Alert
-└─ summary.md       # al detener la sesión
+├─ summary.md       # al detener la sesión
+└─ summary.wav      # opcional, botón «Generar audio»
 ```
 
 - Ajustes: `~/.config/rtt/settings.json`.
