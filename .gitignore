@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Salida de compilación y empaquetado
+dist/
+out/
+
+# Caché de modelos de QVAC y sesiones (por si se copian dentro del repo)
+.qvac/
+RTT-sessions/
+
+# Secretos locales
+.env
+.env.*
+settings.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporales de pruebas
+.tmp-test/
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
