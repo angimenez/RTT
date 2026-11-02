@@ -22,6 +22,9 @@ export type Settings = {
   telegram: { enabled: boolean; botToken: string; chatId: string }
 }
 
+// Fuente de audio de una sesión
+export type SourceChoice = { kind: 'system' | 'mic' } | { kind: 'file'; path: string }
+
 export type ModelState = { stage: 'idle' | 'downloading' | 'loading' | 'ready' | 'error'; percent?: number; error?: string }
 
 export type SessionInfo = { name: string; hasSummary: boolean; alertCount: number }
@@ -42,7 +45,8 @@ export type RttEvent =
 
 // API expuesta por el preload en window.rtt
 export interface RttApi {
-  start(): Promise<void>
+  start(source?: SourceChoice): Promise<void>
+  pickAudioFile(): Promise<string | null>
   stop(): Promise<void>
   prepareModels(): Promise<void>
   getSettings(): Promise<Settings>

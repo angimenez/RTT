@@ -5,6 +5,7 @@ const invoke = (channel: string) => (...args: unknown[]) => ipcRenderer.invoke(c
 
 const api: RttApi = {
   start: invoke('start') as RttApi['start'],
+  pickAudioFile: invoke('pickAudioFile') as RttApi['pickAudioFile'],
   stop: invoke('stop') as RttApi['stop'],
   prepareModels: invoke('prepareModels') as RttApi['prepareModels'],
   getSettings: invoke('getSettings') as RttApi['getSettings'],

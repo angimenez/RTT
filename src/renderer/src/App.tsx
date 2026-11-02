@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
-import type { Alert, ModelState, RttEvent, Segment, SessionDetail } from '../../shared/types'
+import type { Alert, ModelState, RttEvent, Segment, SessionDetail, SourceChoice } from '../../shared/types'
 import { AlertsPanel } from './AlertsPanel'
 import { Sidebar } from './Sidebar'
 import { TranscriptPanel } from './TranscriptPanel'
@@ -56,7 +56,7 @@ export function App() {
       <TranscriptPanel
         live={live}
         viewing={showing}
-        onStart={() => { setViewing(null); void window.rtt.start() }}
+        onStart={(source) => { setViewing(null); void window.rtt.start(source) }}
         onStop={() => void window.rtt.stop()}
         onCloseView={() => setViewing(null)}
       />

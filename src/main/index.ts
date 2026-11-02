@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { mkdir, readFile } from 'node:fs/promises'
-import type { RttEvent, Settings } from '../shared/types'
+import type { RttEvent, Settings, SourceChoice } from '../shared/types'
 import { ModelService } from './models'
 import { TelegramNotifier } from './notifier-telegram'
 import { SessionManager } from './session-manager'
@@ -21,7 +21,15 @@ const manager = new SessionManager(models, async () => settings)
 manager.on('event', send)
 
 function registerIpc() {
-  ipcMain.handle('start', () => manager.start())
+  ipcMain.handle('start', (_e, source?: SourceChoice) => manager.start(source))
+  ipcMain.handle('pickAudioFile', async () => {
+    const r = await dialog.showOpenDialog(win!, {
+      title: 'Elige el audio a transcribir',
+      properties: ['openFile'],
+      filters: [{ name: 'Audio o vídeo', extensions: ['wav', 'mp3', 'ogg', 'flac', 'm4a', 'opus', 'webm', 'aac', 'wma', 'mp4', 'mkv'] }]
+    })
+    return r.canceled ? null : r.filePaths[0]
+  })
   ipcMain.handle('stop', () => manager.stop())
   ipcMain.handle('prepareModels', () => models.ensureLoaded(settings).catch((e) => send({ type: 'error', message: String(e?.message ?? e) })))
   ipcMain.handle('getSettings', () => settings)

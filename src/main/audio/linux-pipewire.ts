@@ -4,17 +4,21 @@ import type { AudioSource } from './audio-source'
 const CHUNK_BYTES = 1600 * 4 // 100 ms a 16 kHz, f32le (formato que usan los ejemplos del SDK)
 
 /**
- * Captura el monitor del sink de salida con pw-record (PipeWire).
- * `stream.capture.sink=true` hace que, sin --target, grabe lo que suena por el sink por defecto.
+ * Captura con pw-record (PipeWire). Modo 'system': el monitor del sink de salida
+ * (`stream.capture.sink=true` hace que, sin --target, grabe lo que suena por el sink por defecto).
+ * Modo 'mic': la fuente de entrada por defecto (micrófono).
  */
 export class LinuxPipewireSource implements AudioSource {
   private proc?: ChildProcess
 
-  constructor(private target: string) {}
+  constructor(private mode: 'system' | 'mic', private target: string) {}
 
   async start(onChunk: (pcm: Buffer) => void, onError: (e: Error) => void) {
-    const args = ['--raw', '-P', '{ stream.capture.sink=true }', '--rate', '16000', '--channels', '1', '--format', 'f32']
-    if (this.target) args.push('--target', this.target)
+    const args = ['--raw', '--rate', '16000', '--channels', '1', '--format', 'f32']
+    if (this.mode === 'system') {
+      args.push('-P', '{ stream.capture.sink=true }')
+      if (this.target) args.push('--target', this.target)
+    }
     args.push('-')
 
     const proc = spawn('pw-record', args, { stdio: ['ignore', 'pipe', 'pipe'] })

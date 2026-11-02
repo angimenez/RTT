@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events'
-import type { Alert, RttEvent, Segment, Settings } from '../shared/types'
+import type { Alert, RttEvent, Segment, Settings, SourceChoice } from '../shared/types'
 import { createAudioSource, rms, type AudioSource } from './audio/audio-source'
 import { Analyzer } from './analyzer'
 import type { ModelService } from './models'
@@ -35,7 +35,7 @@ export class SessionManager extends EventEmitter {
 
   get isIdle() { return this.status === 'idle' }
 
-  async start() {
+  async start(source: SourceChoice = { kind: 'system' }) {
     if (this.status !== 'idle') return
     this.setStatus('starting')
     try {
@@ -56,14 +56,15 @@ export class SessionManager extends EventEmitter {
         (e) => { this.fail(`Transcripción: ${e.message}`); void this.stop() }
       )
 
-      this.audio = createAudioSource(settings.audioTarget)
+      this.audio = createAudioSource(source, settings.audioTarget)
       await this.audio.start(
         (pcm) => {
           this.transcriber?.write(pcm)
           const now = Date.now()
           if (now - this.lastLevel > 100) { this.lastLevel = now; this.emitEvent({ type: 'level', rms: rms(pcm) }) }
         },
-        (e) => { this.fail(e.message); void this.stop() }
+        (e) => { this.fail(e.message); void this.stop() },
+        () => { void this.stop() } // archivo terminado: cierra la sesión y genera el resumen
       )
       this.setStatus('recording')
     } catch (e) {

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import type { ModelState, SessionDetail } from '../../shared/types'
+import { useEffect, useRef, useState } from 'react'
+import type { ModelState, SessionDetail, SourceChoice } from '../../shared/types'
 import type { LiveState } from './App'
 import { AudioControls } from './AudioControls'
 
@@ -12,13 +12,15 @@ const mmss = (ms: number) => new Date(ms).toISOString().slice(11, 19)
 type Props = {
   live: LiveState
   viewing: SessionDetail | null
-  onStart(): void
+  onStart(source: SourceChoice): void
   onStop(): void
   onCloseView(): void
 }
 
 export function TranscriptPanel({ live, viewing, onStart, onStop, onCloseView }: Props) {
   const bottom = useRef<HTMLDivElement>(null)
+  const [kind, setKind] = useState<SourceChoice['kind']>('system')
+  const [file, setFile] = useState<string | null>(null)
   useEffect(() => { bottom.current?.scrollIntoView({ block: 'end' }) }, [live.segments.length])
 
   const busy = live.status !== 'idle'
@@ -37,7 +39,25 @@ export function TranscriptPanel({ live, viewing, onStart, onStop, onCloseView }:
         ) : (
           <>
             {busy ? <button className="stop" onClick={onStop} disabled={live.status !== 'recording'}>■ Detener</button>
-                  : <button className="rec" onClick={onStart}>● Iniciar</button>}
+                  : <>
+                      <button className="rec" onClick={() => {
+                        if (kind === 'file') { if (file) onStart({ kind, path: file }) } else onStart({ kind })
+                      }} disabled={kind === 'file' && !file}>● Iniciar</button>
+                      <select value={kind} onChange={async (e) => {
+                        const k = e.target.value as SourceChoice['kind']
+                        if (k === 'file') { // al elegir «Archivo» se abre el selector; si se cancela, no cambia
+                          const p = await window.rtt.pickAudioFile()
+                          if (!p) return
+                          setFile(p)
+                        }
+                        setKind(k)
+                      }}>
+                        <option value="system">Audio del sistema</option>
+                        <option value="mic">Micrófono</option>
+                        <option value="file">{file ? `Archivo: ${file.split(/[\\/]/).pop()}` : 'Archivo de audio…'}</option>
+                      </select>
+                      {kind === 'file' && <button onClick={async () => { const p = await window.rtt.pickAudioFile(); if (p) setFile(p) }}>Cambiar archivo</button>}
+                    </>}
             <span className="status">{live.status === 'recording' ? `Grabando · ${live.session}` : STATUS[live.status]}</span>
             <div className="meter"><div style={{ width: `${Math.min(100, live.level * 400)}%` }} /></div>
           </>
