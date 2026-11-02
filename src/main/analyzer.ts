@@ -75,7 +75,7 @@ export class Analyzer {
     const run = completion({
       modelId: this.modelId,
       history: [
-        { role: 'system', content: SYSTEM },
+        { role: 'system', content: `${SYSTEM}\nFecha de hoy: ${new Date().toISOString().slice(0, 10)}. Usa esta fecha para resolver "el viernes", "mañana", etc.` },
         { role: 'user', content: `Transcripción reciente:\n${transcript}${knownList}` }
       ],
       stream: true,

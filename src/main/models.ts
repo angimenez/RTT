@@ -1,9 +1,10 @@
-import { loadModel, unloadModel, QWEN3_5_2B_MULTIMODAL_Q4_K_M, WHISPER_SMALL_Q8_0, VAD_SILERO_5_1_2 } from '@qvac/sdk'
+import { loadModel, unloadModel, WHISPER_SMALL_Q8_0, VAD_SILERO_5_1_2 } from '@qvac/sdk'
 import type { ModelState, Settings } from '../shared/types'
 
 // Constantes del registro de QVAC. Cambiarlas aquí cambia los modelos de toda la app.
 const WHISPER_MODEL = WHISPER_SMALL_Q8_0 // multilingüe
-const LLM_MODEL = QWEN3_5_2B_MULTIMODAL_Q4_K_M
+// Qwen3.5-4B Q4_K_M, archivo local (también sirve una constante del SDK, p. ej. QWEN3_5_4B_MULTIMODAL_Q4_K_M).
+const LLM_MODEL = '/respaldos/modelsAI/Qwen3.5-4B-Q4_K_M.gguf'
 
 type Listener = (whisper: ModelState, llm: ModelState) => void
 
