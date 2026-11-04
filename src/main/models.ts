@@ -64,6 +64,7 @@ export class ModelService {
           audio_format: 'f32le',
           strategy: 'greedy',
           n_threads: 4,
+          contextParams: { use_gpu: true }, // por defecto Whisper corre en CPU; esto lo manda a Vulkan
           ...(settings.language === 'auto' ? {} : { language: settings.language }),
           no_timestamps: true,
           suppress_blank: true,
